@@ -1,0 +1,17 @@
+{
+  "name": "ical",
+  "version": "1.0.0",
+  "description": "calander convert to json ",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "josef",
+  "license": "ISC",
+  "dependencies": {
+    "forecast-promise": "^1.2.1",
+    "ical2json": "^3.0.0",
+    "node-fetch": "^2.6.0",
+    "readtoend": "0.0.1"
+  }
+}

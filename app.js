@@ -4,6 +4,10 @@ const hostname = "127.0.0.1";
 const port = 3000;
 var ical2json = require("ical2json");
 const fetch = require("node-fetch");
+const utils = require("./functions/utils");
+const bamboo = require("./functions/bamboo");
+const config = require("./config/config");
+const headers = require("./api/headers");
 
 //////////////////////////////////////////// Inital Global variables ////////////////////////////////////////////////////////////////
 
@@ -11,10 +15,11 @@ let jsonFile = "bro.json";
 let nameAndIdMap = new Map();
 let foreCastPeople = [];
 
-let forecastAuthToken =
-  "Bearer 2230528.at.SbbxCGsXcb1VTUQtmvPmyzWM7X2BQtoZagHoLpPr0T_3qhZ8B5mGQQhak1R9EuOvb3p4zfjMOlm58v0kQnEzkg";
-let forecastAccountId = "1246251";
-let projectId = "2468940";
+let offType = "Vacation";
+
+let forecastAuthToken = config.keys.forecastAuthToken;
+let forecastAccountId = config.keys.forecastAccountId;
+let projectId = config.keys.projectId;
 
 // Kaps Details
 
@@ -34,12 +39,6 @@ let apiPeoplePath = "/people";
 let icalToJsonData;
 /////////////////////////////////////////////////////////// Get Files ///////////////////////////////////////////////////////////
 
-// function getJsonFile() {
-//   let rawdata = fs.readFileSync(jsonFile);
-//   let icalData = JSON.parse(rawdata);
-//   sortToVacation(icalData);
-// }
-
 async function getJsonFile1() {
   return new Promise(resolve => {
     let rawdata = fs.readFileSync(jsonFile);
@@ -50,28 +49,8 @@ async function getJsonFile1() {
 
 /////////////////////////////////////////////////////////// ForeCast Methods ///////////////////////////////////////////////////////////
 
-async function sortVacation(arr) {
-  let array = arr;
-
-  let arrayLength = array.length;
-  let vacationData = [];
-  let otherData = [];
-  return new Promise(resolve => {
-    for (let index = 0; index < arrayLength; index++) {
-      let object = array[index];
-      let summary = array[index].SUMMARY;
-      if (doesStringExist(searchVaction(summary, "Vacation")) === true) {
-        vacationData.push(object);
-      } else {
-        otherData.push(object);
-      }
-    }
-    resolve(vacationData);
-  });
-}
-
 async function sortToVacation(array) {
-  const result = await sortVacation(array);
+  const result = await bamboo.sortByOffType(array, offType);
   personToPost(result);
 }
 
@@ -83,14 +62,14 @@ function personToPost(array) {
 
     let summary = array[index].SUMMARY;
     let description = array[index].DESCRIPTION;
-    let endDate = getBambooEndDate(description, endDateToFormat);
-    let name = splitString(summary);
-    let fullName = getName(name);
+    let endDate = bamboo.getBambooEndDate(description, endDateToFormat);
+    let name = utils.splitString(summary);
+    let fullName = utils.getFirstTwoWords(name);
 
     let personPutObject2 = {
       assignment: {
-        start_date: spiltDate(startDate),
-        end_date: spiltDate(endDate),
+        start_date: utils.spiltDate(startDate),
+        end_date: utils.spiltDate(endDate),
         allocation: null,
         active_on_days_off: false,
         repeated_assignment_set_id: null,
@@ -105,76 +84,17 @@ function personToPost(array) {
       personPutObject2.assignment.person_id != undefined
     ) {
       let stringy = JSON.stringify(personPutObject2);
+      console.log(stringy);
       makePostForecastRequest(
         urlTimeOffPut,
         apiTimeOffPath,
         stringy,
         forecastAuthToken,
         forecastAccountId,
-        makeHeaders
+        false
       );
     }
   }
-}
-
-function getBambooEndDate(string, date) {
-  let d = date;
-  let formated = string
-    .replace(/[\Time/&]+/g, "")
-    .replace(/[\off/&]+/g, "")
-    .replace(/[\off/&]+/g, "")
-    .replace(/[{()}]/g, "")
-    .trimLeft();
-  let boolDash = /[\–]/.test(formated);
-
-  if (boolDash === true) {
-    let splitDash = formated.split("–")[1].trimLeft();
-    if (splitDash.length > 2) {
-      let endDigit = splitDash.split(" ")[1].trimLeft();
-      let digit = makeDoubleDigit(endDigit);
-      let replaceEnd = d.substr(0, d.length - 2) + `${digit}`;
-      return replaceEnd;
-    }
-    let digit = makeDoubleDigit(splitDash);
-    let replaceEnd = d.substr(0, d.length - 2) + `${digit}`;
-    return replaceEnd;
-  }
-  if (boolDash === false) {
-    let rmvSlash = formated.split("\\")[0];
-    let endDigit = rmvSlash.split(" ")[1].trimLeft();
-    let digit = makeDoubleDigit(endDigit);
-    let replaceEnd = d.substr(0, d.length - 2) + `${digit}`;
-    return replaceEnd;
-  }
-}
-
-function makeDoubleDigit(val) {
-  let value;
-  if (val < 10) {
-    value = `0${val}`;
-    return value;
-  } else {
-    value = val;
-    return value;
-  }
-}
-
-function searchVaction(string, searchWord) {
-  return string.search(searchWord);
-}
-
-function doesStringExist(n) {
-  if (n > -1) {
-    return true;
-  } else {
-    return false;
-  }
-}
-function splitString(nameString) {
-  return nameString.replace(/ *\([^)]*\) */g, "");
-}
-function spiltDate(dateString) {
-  return dateString.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
 }
 
 function assignForeID(name) {
@@ -195,8 +115,8 @@ function postForePeople() {
     let namesArray = [];
 
     for (let index = 0; index < arrayLength; index++) {
-      let first_name = firstName(array[index].SUMMARY);
-      let second_name = secondName(array[index].SUMMARY);
+      let first_name = utils.getFirstWord(array[index].SUMMARY);
+      let second_name = utils.getSecondWord(array[index].SUMMARY);
       let fullName = first_name + second_name;
       let names = namesArray.indexOf(fullName);
       let postData = makePutPeolpleBody(first_name, second_name);
@@ -208,7 +128,7 @@ function postForePeople() {
           postData,
           forecastAuthToken,
           forecastAccountId,
-          makeHeadersGenForePeople
+          true
         );
       }
       namesArray.push(fullName);
@@ -216,31 +136,12 @@ function postForePeople() {
   });
 }
 
-function firstName(string) {
-  let firstName = string.substr(0, string.indexOf(" "));
-  return firstName;
-}
-
-function secondName(string) {
-  let split = string.substr(string.indexOf(" "));
-  let trim = split.trimLeft();
-  let secondName = trim.substr(0, trim.indexOf(" "));
-  return secondName;
-}
-
-function getName(string) {
-  let name = string
-    .split(" ")
-    .slice(0, 2)
-    .join(" ");
-  return name;
-}
 //postForePeople(getJsonFile1);
 
-function makeGetForecastRequest(url, path, authToken, accountId) {
+function makeGetForecastRequest(url, path, authToken, accountId, boolean) {
   fetch(url, {
     method: "GET",
-    headers: makeHeaders(path, authToken, accountId)
+    headers: headers.makeHeaders(path, authToken, accountId, boolean)
   })
     .then(res => res.json())
     .then(json => {
@@ -271,12 +172,12 @@ function makePostForecastRequest(
   data,
   authToken,
   accountId,
-  headerfunction
+  boolean
 ) {
   fetch(url, {
     method: "POST",
     body: data,
-    headers: headerfunction(path, authToken, accountId)
+    headers: headers.makeHeaders(path, authToken, accountId, boolean)
   })
     .then(res => res.json())
     .then(json => {
@@ -287,7 +188,7 @@ function makePostForecastRequest(
 function makeDeleteForecastRequest(url, path, authToken, accountId) {
   fetch(url, {
     method: "DELETE",
-    headers: makeHeaders(path, authToken, accountId)
+    headers: headers.makeHeaders(path, authToken, accountId)
   })
     .then(res => res.json())
     .then(json => console.log(json));
@@ -372,68 +273,26 @@ function makePutPeolpleBody(first_name, last_name) {
   });
 }
 
-function makeHeaders(path, authToken, accountId) {
-  return {
-    "Content-Type": "application/json",
-    authority: "api.forecastapp.com",
-    path: path,
-    scheme: "https",
-    accept: "application/json, text/javascript, */*; q=0.01",
-    "accept-encoding": "gzip, deflate, br",
-    "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
-    authorization: authToken,
-    length: "224", // Buffer.byteLength('অ') ?????
-    "forecast-account-id": accountId,
-    "forecast-client-version": "1.0.2+3ac3e7d",
-    origin: "https://forecastapp.com",
-    referer: "https://forecastapp.com/",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-site"
-  };
-}
-
-function makeHeadersGenForePeople(path, authToken, accountId) {
-  return {
-    "Content-Type": "application/json",
-    authority: "api.forecastapp.com",
-    path: path,
-    scheme: "https",
-    accept: "application/json, text/javascript, */*; q=0.01",
-    "accept-encoding": "gzip, deflate, br",
-    "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
-    authorization: authToken,
-    "forecast-account-id": accountId,
-    "forecast-client-version": "1.0.2+3ac3e7d",
-    origin: "https://forecastapp.com",
-    referer: "https://forecastapp.com/",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-site"
-  };
-}
-
 /////////////////////////////////////////////////////////// Bamboo Methods ///////////////////////////////////////////////////////////
 
 function getPromise() {
   return new Promise((resolve, reject) => {
-    http.get(
-      "http://zaizi.bamboohr.com/feeds/feed.php?id=9bc86de31f5162c30b88f88d1fe4a425",
-      response => {
-        let chunks_of_data = [];
+    http.get(config.urls.bambooIcal, response => {
+      let chunks_of_data = [];
 
-        response.on("data", fragments => {
-          chunks_of_data.push(fragments);
-        });
+      response.on("data", fragments => {
+        chunks_of_data.push(fragments);
+      });
 
-        response.on("end", () => {
-          let response_body = Buffer.concat(chunks_of_data);
-          resolve(response_body.toString());
-        });
+      response.on("end", () => {
+        let response_body = Buffer.concat(chunks_of_data);
+        resolve(response_body.toString());
+      });
 
-        response.on("error", error => {
-          reject(error);
-        });
-      }
-    );
+      response.on("error", error => {
+        reject(error);
+      });
+    });
   });
 }
 async function makeSynchronousRequest(request) {
@@ -455,7 +314,8 @@ async function makeSynchronousRequest(request) {
       urlPeople,
       apiPeoplePath,
       forecastAuthToken,
-      forecastAccountId
+      forecastAccountId,
+      true
     );
   });
 })();

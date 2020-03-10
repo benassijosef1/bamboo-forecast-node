@@ -41,5 +41,12 @@ module.exports = {
       .slice(0, 2)
       .join(" ");
     return str;
+  },
+  getJsonFile: async function() {
+    return new Promise(resolve => {
+      let rawdata = fs.readFileSync(jsonFile);
+      let data = JSON.parse(rawdata);
+      resolve(data);
+    });
   }
 };

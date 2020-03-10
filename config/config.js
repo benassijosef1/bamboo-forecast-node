@@ -7,6 +7,18 @@ module.exports = {
   },
   urls: {
     bambooIcal:
-      "http://zaizi.bamboohr.com/feeds/feed.php?id=9bc86de31f5162c30b88f88d1fe4a425"
+      "http://zaizi.bamboohr.com/feeds/feed.php?id=9bc86de31f5162c30b88f88d1fe4a425",
+    urlTimeOffPut: "https://api.forecastapp.com/assignments",
+    urlPeople: "https://api.forecastapp.com/people"
+  },
+  paths: {
+    apiTimeOffPath: "/assignments",
+    apiPeoplePath: "/people"
   }
 };
+
+// Kaps Details
+
+// forecastAuthToken:"Bearer 1634237.pt.lmMVrMiukzHIFzHW8vVHaR5FOWLuopIr3slt3HLcUIUdlo9PTOhoVci9N3KDVLOt1Yrr8uuFgisNlVzQBGofIw",
+// forecastAccountId: "795781",
+// projectId: = "1078238"

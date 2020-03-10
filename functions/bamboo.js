@@ -51,5 +51,6 @@ module.exports = {
       }
       resolve(vacationData);
     });
-  }
+  },
+  offType: "Vacation"
 };

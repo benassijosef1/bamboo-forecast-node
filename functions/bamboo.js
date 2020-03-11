@@ -4,12 +4,15 @@ module.exports = {
     let d = date;
     let formated = utils.rmvParenth(utils.rmvWords(string, "Time", "off"));
     let boolDash = utils.checkForDash(formated);
+
+    let replaceEnd;
+    let digit;
+    let endDigit;
+
     if (boolDash === true) {
       let splitDash = formated.split("–")[1].trimLeft();
-      let replaceEnd;
-      let digit;
       if (splitDash.length > 2) {
-        let endDigit = splitDash.split(" ")[1].trimLeft();
+        endDigit = splitDash.split(" ")[1].trimLeft();
         digit = utils.makeDoubleDigit(endDigit);
         replaceEnd = d.substr(0, d.length - 2) + `${digit}`;
         return replaceEnd;
@@ -20,7 +23,7 @@ module.exports = {
     }
     if (boolDash === false) {
       let rmvSlash = formated.split("\\")[0];
-      let endDigit = rmvSlash.split(" ")[1].trimLeft();
+      endDigit = rmvSlash.split(" ")[1].trimLeft();
       digit = utils.makeDoubleDigit(endDigit);
       replaceEnd = d.substr(0, d.length - 2) + `${digit}`;
       return replaceEnd;

@@ -18,8 +18,10 @@ module.exports = {
     return map.get(name);
   },
   setAssignmentsToPost: async function(array, json) {
+    let genkey = this.createForecastKeyMap(this.genForePeople(json));
     return new Promise(resolve => {
       let assigments = array.map(element => {
+        let name = utils.getFirstTwoWords(utils.splitString(element.SUMMARY));
         let person = {
           assignment: {
             start_date: utils.spiltDate(element["DTSTART;VALUE=DATE"]),
@@ -33,10 +35,7 @@ module.exports = {
             active_on_days_off: false,
             repeated_assignment_set_id: null,
             project_id: config.keys.projectId,
-            person_id: this.assignForecastId(
-              this.createForecastKeyMap(this.genForePeople(json)),
-              utils.getFirstTwoWords(utils.splitString(element.SUMMARY))
-            ),
+            person_id: this.assignForecastId(genkey, name),
             placeholder_id: null
           }
         };

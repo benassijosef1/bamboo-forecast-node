@@ -19,6 +19,7 @@ module.exports = {
 
 // Kaps Details
 
-// forecastAuthToken:"Bearer 1634237.pt.lmMVrMiukzHIFzHW8vVHaR5FOWLuopIr3slt3HLcUIUdlo9PTOhoVci9N3KDVLOt1Yrr8uuFgisNlVzQBGofIw",
+// forecastAuthToken:
+// "Bearer 1634237.pt.lmMVrMiukzHIFzHW8vVHaR5FOWLuopIr3slt3HLcUIUdlo9PTOhoVci9N3KDVLOt1Yrr8uuFgisNlVzQBGofIw",
 // forecastAccountId: "795781",
-// projectId: = "1078238"
+// projectId: "1078238"

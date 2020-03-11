@@ -14,22 +14,34 @@ test("if number is greater than -1 return true", () => {
   expect(utils.doesStringExist(1)).toBe(true);
 });
 
-test("if word is found in string return its index", () => {
+test("if word is found in string it returns its index", () => {
   expect(utils.wordSearch("testing is great fun", "testing")).toBe(0);
 });
 
-test("if string value is less than 10 add a zero to it to make it a double digit", () => {
+test("if string value is less than 10 it adds a zero to it to make it a double digit", () => {
   expect(utils.makeDoubleDigit("5")).toBe("05");
 });
 
-test("return first word from a string", () => {
+test("returns the first word from a string", () => {
   expect(utils.getFirstWord("it is cold")).toBe("it");
 });
 
-test("return second word from a string", () => {
+test("returns the second word from a string", () => {
   expect(utils.getSecondWord("it is cold")).toBe("is");
 });
 
-test("return first two words from a string", () => {
+test("returns the first two words from a string", () => {
   expect(utils.getFirstTwoWords("it is cold")).toBe("it is");
+});
+
+test("should remove the the two words you define from a given string", () => {
+  expect(utils.rmvWords("Time off Joe is great", "Time", "off")).toBe(
+    "Joe is great"
+  );
+});
+
+test("should remove parentheses from a string ", () => {
+  expect(utils.rmvParenth("(hello there) my name is joe")).toBe(
+    "hello there my name is joe"
+  );
 });

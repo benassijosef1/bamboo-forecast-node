@@ -1,73 +1,73 @@
 const bamboo = require("./bamboo");
 const utils = require("./utils");
 const config = require("../config/config");
-let nameAndIdMap = new Map();
-
 module.exports = {
-  sortType: async function(arr, offType) {
+  sortType: async function(func, arr, offType) {
     let array = arr;
-    let result = await bamboo.sortByOffType(array, offType);
+    let result = await func(array, offType);
     return result;
   },
-  createForecastKeyMap: function(array) {
-    let arrayLength = array.length;
-    for (let index = 0; index < arrayLength; index++) {
-      let fullName = array[index].firstName + " " + array[index].lastName;
-      let id = array[index].forecastId;
-      nameAndIdMap.set(fullName, id);
-    }
+  createForecastKeyMap: function(peopleArray) {
+    let nameAndIdMap = new Map();
+    peopleArray.map(response => {
+      nameAndIdMap.set(response.fullName, response.id);
+    });
     return nameAndIdMap;
   },
-  assignForecastId: function(name) {
-    return nameAndIdMap.get(name);
+  assignForecastId: function(map, name) {
+    return map.get(name);
   },
-  setAssignmentsToPost: async function(array) {
+  setAssignmentsToPost: async function(array, json) {
     return new Promise(resolve => {
-      let arrayLength = array.length;
-      let assignments = [];
-
-      for (let index = 0; index < arrayLength; index++) {
-        const startDate = array[index]["DTSTART;VALUE=DATE"];
-        let endDateToFormat = array[index]["DTEND;VALUE=DATE"];
-
-        let summary = array[index].SUMMARY;
-        let description = array[index].DESCRIPTION;
-        let endDate = bamboo.getBambooEndDate(description, endDateToFormat);
-        console.log("summary", summary);
-        let name = utils.splitString(summary);
-        console.log("name", name);
-        let fullName = utils.getFirstTwoWords(name);
-
-        let personPutObject2 = {
+      let assigments = array.map(element => {
+        let person = {
           assignment: {
-            start_date: utils.spiltDate(startDate),
-            end_date: utils.spiltDate(endDate),
+            start_date: utils.spiltDate(element["DTSTART;VALUE=DATE"]),
+            end_date: utils.spiltDate(
+              bamboo.getBambooEndDate(
+                element.DESCRIPTION,
+                element["DTEND;VALUE=DATE"]
+              )
+            ),
             allocation: null,
             active_on_days_off: false,
             repeated_assignment_set_id: null,
             project_id: config.keys.projectId,
-            person_id: this.assignForecastId(fullName),
+            person_id: this.assignForecastId(
+              this.createForecastKeyMap(this.genForePeople(json)),
+              utils.getFirstTwoWords(utils.splitString(element.SUMMARY))
+            ),
             placeholder_id: null
           }
         };
 
         if (
-          personPutObject2.assignment.person_id != null ||
-          personPutObject2.assignment.person_id != undefined
+          person.assignment.person_id != null ||
+          person.assignment.person_id != undefined
         ) {
-          assignments.push(personPutObject2);
+          return person;
         }
-      }
+      });
 
-      resolve(assignments);
+      resolve(assigments);
     });
   },
-  getAssignmentsToPost: async function(array) {
+  getAssignmentsToPost: async function(array, json) {
     try {
-      let post = await this.setAssignmentsToPost(array);
+      let post = await this.setAssignmentsToPost(array, json);
       return post;
     } catch (err) {
       console.log(err);
     }
+  },
+  genForePeople: function(json) {
+    let arr = json.people;
+    let people = arr.map(res => {
+      return {
+        id: res.id,
+        fullName: res.first_name + " " + res.last_name
+      };
+    });
+    return people;
   }
 };

@@ -42,9 +42,23 @@ module.exports = {
       .join(" ");
     return str;
   },
-  getJsonFile: async function() {
+  checkForDash: function(string) {
+    let bool = /[\–]/.test(string);
+    return bool;
+  },
+  rmvWords: function(string, ...args) {
+    let str = string;
+    args.map(element => {
+      str = str.replace(element, "");
+    });
+    return str.trimLeft();
+  },
+  rmvParenth: function(string) {
+    return string.replace(/[{()}]/g, "").trimLeft();
+  },
+  getJsonFile: async function(file) {
     return new Promise(resolve => {
-      let rawdata = fs.readFileSync(jsonFile);
+      let rawdata = fs.readFileSync(file);
       let data = JSON.parse(rawdata);
       resolve(data);
     });

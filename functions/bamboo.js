@@ -2,14 +2,8 @@ const utils = require("./utils");
 module.exports = {
   getBambooEndDate: function(string, date) {
     let d = date;
-    let formated = string
-      .replace(/[\Time/&]+/g, "")
-      .replace(/[\off/&]+/g, "")
-      .replace(/[\off/&]+/g, "")
-      .replace(/[{()}]/g, "")
-      .trimLeft();
-    let boolDash = /[\–]/.test(formated);
-
+    let formated = utils.rmvParenth(utils.rmvWords(string, "Time", "off"));
+    let boolDash = utils.checkForDash(formated);
     if (boolDash === true) {
       let splitDash = formated.split("–")[1].trimLeft();
       let replaceEnd;

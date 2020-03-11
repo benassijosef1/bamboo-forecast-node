@@ -45,7 +45,7 @@ module.exports = {
     authToken,
     accountId,
     boolean,
-    func
+    response
   ) {
     fetch(url, {
       method: "GET",
@@ -53,27 +53,9 @@ module.exports = {
     })
       .then(res => res.json())
       .then(json => {
-        let array = json.people;
-        let arrayLength = json.people.length;
-        let foreCastPeople = [];
-
-        for (let index = 0; index < arrayLength; index++) {
-          let person = {
-            firstName: array[index].first_name,
-            lastName: array[index].last_name,
-            forecastId: array[index].id
-          };
-          foreCastPeople.push(person);
-        }
-        return foreCastPeople;
-      })
-      .then(res => {
-        forecast.createForecastKeyMap(res);
-        forecast.sortType(func, offType).then(res => {
-          forecast.getAssignmentsToPost(res).then(res => {
-            let length = res.length;
-            for (let index = 0; index < length; index++) {
-              let element = res[index];
+        forecast.sortType(bamboo.sortByOffType, response, offType).then(res => {
+          forecast.getAssignmentsToPost(res, json).then(res => {
+            res.map(element => {
               let stringy = JSON.stringify(element);
               console.log(stringy);
               //   this.makePostForecastRequest(
@@ -84,7 +66,7 @@ module.exports = {
               //     forecastAccountId,
               //     false
               //   );
-            }
+            });
           });
         });
       });
@@ -96,7 +78,6 @@ module.exports = {
       let d = ical2json.convert(response_body);
       let jsonContennt = d.VCALENDAR[0].VEVENT;
       let data = JSON.stringify(jsonContennt);
-      //fs.writeFileSync("bro.json", data);
       return JSON.parse(data);
     } catch (error) {
       console.log(error);
@@ -132,8 +113,8 @@ module.exports = {
         console.log(json);
       });
   },
-  postForecastPeople: function() {
-    utils.getJsonFile().then(array => {
+  postForecastPeople: function(file) {
+    utils.getJsonFile(file).then(array => {
       let arrayLength = array.length;
       let namesArray = [];
 

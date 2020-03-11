@@ -75,14 +75,15 @@ module.exports = {
             for (let index = 0; index < length; index++) {
               let element = res[index];
               let stringy = JSON.stringify(element);
-              this.makePostForecastRequest(
-                urlTimeOffPut,
-                apiTimeOffPath,
-                stringy,
-                forecastAuthToken,
-                forecastAccountId,
-                false
-              );
+              console.log(stringy);
+              //   this.makePostForecastRequest(
+              //     urlTimeOffPut,
+              //     apiTimeOffPath,
+              //     stringy,
+              //     forecastAuthToken,
+              //     forecastAccountId,
+              //     false
+              //   );
             }
           });
         });

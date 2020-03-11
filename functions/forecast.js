@@ -33,7 +33,9 @@ module.exports = {
         let summary = array[index].SUMMARY;
         let description = array[index].DESCRIPTION;
         let endDate = bamboo.getBambooEndDate(description, endDateToFormat);
+        console.log("summary", summary);
         let name = utils.splitString(summary);
+        console.log("name", name);
         let fullName = utils.getFirstTwoWords(name);
 
         let personPutObject2 = {

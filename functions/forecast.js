@@ -2,9 +2,9 @@ const bamboo = require("./bamboo");
 const utils = require("./utils");
 const config = require("../config/config");
 module.exports = {
-  sortType: async function(func, arr, offType) {
+  sortType: async function(func, arr, string) {
     let array = arr;
-    let result = await func(array, offType);
+    let result = await func(array, string);
     return result;
   },
   createForecastKeyMap: function(peopleArray) {

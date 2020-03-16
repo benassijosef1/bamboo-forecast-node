@@ -1,4 +1,4 @@
-const utils = require("./utils");
+const utils = require("../functions/utils");
 
 test("should remove all brackets from a string and just return a name", () => {
   expect(utils.splitString("Brian May Harold (Vacation - 7 days)")).toBe(

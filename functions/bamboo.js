@@ -29,7 +29,7 @@ module.exports = {
       return replaceEnd;
     }
   },
-  sortByOffType: async function(arr, holidayType) {
+  sortByOffType: async function(arr, holidayType, key) {
     let array = arr;
     let arrayLength = array.length;
     let vacationData = [];
@@ -37,7 +37,7 @@ module.exports = {
     return new Promise(resolve => {
       for (let index = 0; index < arrayLength; index++) {
         let object = array[index];
-        let summary = array[index].SUMMARY;
+        let summary = array[index][`${key}`];
         if (
           utils.doesStringExist(utils.wordSearch(summary, holidayType)) === true
         ) {
@@ -49,5 +49,6 @@ module.exports = {
       resolve(vacationData);
     });
   },
-  offType: "Vacation"
+  offType: "Vacation",
+  summary: "SUMMARY"
 };

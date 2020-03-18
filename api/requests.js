@@ -2,7 +2,6 @@ const config = require("../config/config");
 const forecast = require("../functions/forecast");
 const bamboo = require("../functions/bamboo");
 const headers = require("./headers");
-const fs = require("fs");
 const ical2json = require("ical2json");
 const http = require("http");
 const utils = require("../functions/utils");
@@ -53,22 +52,24 @@ module.exports = {
     })
       .then(res => res.json())
       .then(json => {
-        forecast.sortType(bamboo.sortByOffType, response, offType).then(res => {
-          forecast.getAssignmentsToPost(res, json).then(res => {
-            res.map(element => {
-              let stringy = JSON.stringify(element);
-              console.log(stringy);
-              // this.makePostForecastRequest(
-              //   urlTimeOffPut,
-              //   apiTimeOffPath,
-              //   stringy,
-              //   forecastAuthToken,
-              //   forecastAccountId,
-              //   false
-              // );
+        forecast
+          .sortType(bamboo.sortByOffType, response, offType, bamboo.summary)
+          .then(res => {
+            forecast.getAssignmentsToPost(res, json).then(res => {
+              res.map(element => {
+                let stringy = JSON.stringify(element);
+                console.log(stringy);
+                // this.makePostForecastRequest(
+                //   urlTimeOffPut,
+                //   apiTimeOffPath,
+                //   stringy,
+                //   forecastAuthToken,
+                //   forecastAccountId,
+                //   false
+                // );
+              });
             });
           });
-        });
       });
   },
   bambooResponse: async function() {
@@ -119,8 +120,10 @@ module.exports = {
       let namesArray = [];
 
       for (let index = 0; index < arrayLength; index++) {
-        let first_name = utils.getFirstWord(array[index].SUMMARY);
-        let second_name = utils.getSecondWord(array[index].SUMMARY);
+        let first_name = utils.getFirstWord(array[index][`${bamboo.summary}`]);
+        let second_name = utils.getSecondWord(
+          array[index][`${bamboo.summary}`]
+        );
         let fullName = first_name + second_name;
         let names = namesArray.indexOf(fullName);
         let postData = this.makePutPeolpleBody(first_name, second_name);
@@ -169,56 +172,3 @@ module.exports = {
     });
   }
 };
-
-// function makeDeleteForecastRequest(url, path, authToken, accountId) {
-//   fetch(url, {
-//     method: "DELETE",
-//     headers: headers.makeHeaders(path, authToken, accountId)
-//   })
-//     .then(res => res.json())
-//     .then(json => console.log(json));
-// }
-
-// function getDeleteData() {
-//   let rawdata = fs.readFileSync("testDeleteData.json");
-//   let delData = JSON.parse(rawdata);
-
-//   for (let index = 0; index < delData.length; index++) {
-//     const id = delData[index].assignment.id;
-//     console.log(id);
-//     let delUrl = `https://api.forecastapp.com/assignments/${id}`;
-//     let delPath = `/assignments/${id}`;
-//     try {
-//       makeDeleteForecastRequest(
-//         delUrl,
-//         delPath,
-//         forecastAuthToken,
-//         forecastAccountId
-//       );
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   }
-// }
-
-// function deletePeople() {
-//   let rawdata = fs.readFileSync("peopletoDelete.json");
-//   let delData = JSON.parse(rawdata);
-
-//   for (let index = 0; index < delData.length; index++) {
-//     const id = delData[index].person.id;
-//     console.log(id);
-//     let delUrl = `https://api.forecastapp.com/people/${id}`;
-//     let delPath = `/people/${id}`;
-//     try {
-//       makeDeleteForecastRequest(
-//         delUrl,
-//         delPath,
-//         forecastAuthToken,
-//         forecastAccountId
-//       );
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   }
-// }

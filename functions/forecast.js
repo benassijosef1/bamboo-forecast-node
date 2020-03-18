@@ -2,9 +2,9 @@ const bamboo = require("./bamboo");
 const utils = require("./utils");
 const config = require("../config/config");
 module.exports = {
-  sortType: async function(func, arr, string) {
+  sortType: async function(func, arr, string, key) {
     let array = arr;
-    let result = await func(array, string);
+    let result = await func(array, string, key);
     return result;
   },
   createForecastKeyMap: function(peopleArray) {
@@ -21,7 +21,9 @@ module.exports = {
     let genkey = this.createForecastKeyMap(this.genForePeople(json));
     return new Promise(resolve => {
       let assigments = array.map(element => {
-        let name = utils.getFirstTwoWords(utils.splitString(element.SUMMARY));
+        let name = utils.getFirstTwoWords(
+          utils.splitString(element[`${bamboo.summary}`])
+        );
         let person = {
           assignment: {
             start_date: utils.spiltDate(element["DTSTART;VALUE=DATE"]),
